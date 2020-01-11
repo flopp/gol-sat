@@ -30,10 +30,13 @@ class Field;
 class Pattern;
 
 void transition(SatSolver& s, const Field& current, const Field& next);
-void equivalent(SatSolver& s, const Field& field1, const Field& field2);
 void patternConstraint(SatSolver& s, const Field& field, const Pattern& pat);
+
+#if 0
+void equivalent(SatSolver& s, const Field& field1, const Field& field2);
 
 std::vector<Minisat::Lit> buildAdder(SatSolver& s,
                                      const std::vector<Minisat::Lit>& inputs);
 void addNumberContraint(SatSolver& s, int value,
                         const std::vector<Minisat::Lit>& encodingVars);
+#endif

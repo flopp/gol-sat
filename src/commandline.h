@@ -30,6 +30,7 @@ struct Options {
     int evolutions = 1;
     std::string pattern;
     bool backwards = true;
+    bool grow = false;
 };
 
 bool parseCommandLine(int argc, char** argv, Options& options);

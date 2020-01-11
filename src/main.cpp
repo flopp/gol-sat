@@ -57,7 +57,18 @@ int main(int argc, char** argv) {
               << " evolution steps..." << std::endl;
     std::vector<Field> fields;
     for (int g = 0; g <= options.evolutions; ++g) {
-        fields.push_back(Field(s, pat.width(), pat.height()));
+        if (!options.grow) {
+            fields.push_back(Field(s, pat.width(), pat.height()));
+        } else {
+            if (options.backwards) {
+                fields.push_back(
+                    Field(s, pat.width() + 2 * (options.evolutions - g),
+                          pat.height() + 2 * (options.evolutions - g)));
+            } else {
+                fields.push_back(
+                    Field(s, pat.width() + 2 * g, pat.height() + 2 * g));
+            }
+        }
         if (g > 0) {
             transition(s, fields[g - 1], fields[g]);
         }

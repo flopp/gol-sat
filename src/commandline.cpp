@@ -38,6 +38,7 @@ bool parseCommandLine(int argc, char** argv, Options& options) {
     po::options_description desc("Allowed options");
     desc.add_options()("help", "Display this help message")(
         "forward,f", "Perform forward computation (default is backwards)")(
+        "grow,g", "Allow for field size growth")(
         "evolutions,e", po::value<int>(),
         "Set number of computed evolution steps (default is 1)");
 
@@ -69,6 +70,9 @@ bool parseCommandLine(int argc, char** argv, Options& options) {
         }
         if (vm.count("forward")) {
             options.backwards = false;
+        }
+        if (vm.count("grow")) {
+            options.grow = true;
         }
         if (vm.count("pattern")) {
             options.pattern = vm["pattern"].as<std::string>();

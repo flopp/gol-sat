@@ -31,10 +31,8 @@
 
 void rule(SatSolver& s, const Minisat::Lit& cell,
           const std::vector<Minisat::Lit>& n, const Minisat::Lit& next) {
-    (void)cell;
     assert(n.size() == 8);
 
-#if 1
     // Under population (<=1 alive neighbor -> cell dies)
     for (std::size_t possiblyalive = 0; possiblyalive < n.size();
          ++possiblyalive) {
@@ -46,9 +44,7 @@ void rule(SatSolver& s, const Minisat::Lit& cell,
         }
         addImpl(s, cond, ~next);
     }
-#endif
 
-#if 1
     // status quo (=2 alive neighbours -> cell stays dead/alive)
     for (std::size_t alive1 = 0; alive1 < n.size(); ++alive1) {
         for (std::size_t alive2 = alive1 + 1; alive2 < n.size(); ++alive2) {
@@ -68,7 +64,6 @@ void rule(SatSolver& s, const Minisat::Lit& cell,
             addImpl(s, cond, ~next);
         }
     }
-#endif
 
     // Birth (= 3 alive neighbors -> cell is alive)
     for (std::size_t alive1 = 0; alive1 < n.size(); ++alive1) {
@@ -87,9 +82,7 @@ void rule(SatSolver& s, const Minisat::Lit& cell,
         }
     }
 
-#if 1
     // Over population (>= 4 alive neighbors -> cell dies)
-
     for (std::size_t alive1 = 0; alive1 < n.size(); ++alive1) {
         for (std::size_t alive2 = alive1 + 1; alive2 < n.size(); ++alive2) {
             for (std::size_t alive3 = alive2 + 1; alive3 < n.size(); ++alive3) {
@@ -105,17 +98,45 @@ void rule(SatSolver& s, const Minisat::Lit& cell,
             }
         }
     }
-#endif
 }
 
 void transition(SatSolver& s, const Field& current, const Field& next) {
-    assert(current.width() == next.width());
-    assert(current.height() == next.height());
+    int offset_x = 0;
+    int offset_y = 0;
+    int from_x, to_x, from_y, to_y;
 
-    for (int x = -1; x <= current.width(); ++x) {
-        for (int y = -1; y <= current.height(); ++y) {
+    if ((current.width() == next.width()) &&
+        (current.height() == next.height())) {
+        // same field size
+        from_x = -1;
+        to_x = current.width();
+        from_y = -1;
+        to_y = current.height();
+    } else if ((current.width() + 2 == next.width()) &&
+               (current.height() + 2 == next.height())) {
+        // field size expands
+        from_x = -2;
+        to_x = current.width() + 1;
+        from_y = -2;
+        to_y = current.height() + 1;
+        offset_x = 1;
+        offset_y = 1;
+    } else if ((current.width() == next.width() + 2) &&
+               (current.height() == next.height() + 2)) {
+        // field size shrinks
+        from_x = -1;
+        to_x = current.width();
+        from_y = -1;
+        to_y = current.height();
+        offset_x = -1;
+        offset_y = -1;
+    } else {
+        assert(false && "incompatible field sizes");
+    }
+
+    for (int x = from_x; x <= to_x; ++x) {
+        for (int y = from_y; y <= to_y; ++y) {
             std::vector<Minisat::Lit> neighbours;
-
             for (int dx = -1; dx <= +1; ++dx) {
                 for (int dy = -1; dy <= +1; ++dy) {
                     if (dx == 0 && dy == 0)
@@ -124,19 +145,8 @@ void transition(SatSolver& s, const Field& current, const Field& next) {
                 }
             }
 
-            rule(s, current(x, y), neighbours, next(x, y));
-        }
-    }
-}
-
-void equivalent(SatSolver& s, const Field& field1, const Field& field2) {
-    assert(field1.width() == field2.width());
-    assert(field1.height() == field2.height());
-
-    for (int y = 0; y < field1.height(); ++y) {
-        for (int x = 0; x < field1.width(); ++x) {
-            s.addClause(field1(x, y), ~field2(x, y));
-            s.addClause(~field1(x, y), field2(x, y));
+            rule(s, current(x, y), neighbours,
+                 next(x + offset_x, y + offset_y));
         }
     }
 }
@@ -157,6 +167,19 @@ void patternConstraint(SatSolver& s, const Field& field, const Pattern& pat) {
             case Pattern::CellState::Unknown:
                 break;
             }
+        }
+    }
+}
+
+#if 0
+void equivalent(SatSolver& s, const Field& field1, const Field& field2) {
+    assert(field1.width() == field2.width());
+    assert(field1.height() == field2.height());
+
+    for (int y = 0; y < field1.height(); ++y) {
+        for (int x = 0; x < field1.width(); ++x) {
+            s.addClause(field1(x, y), ~field2(x, y));
+            s.addClause(~field1(x, y), field2(x, y));
         }
     }
 }
@@ -265,3 +288,4 @@ void addNumberContraint(SatSolver& s, int value,
     assert(value == 0);
     s.addClause(clause);
 }
+#endif
