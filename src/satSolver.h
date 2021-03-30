@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include "minisat/core/Solver.h"
-#include "minisat/simp/SimpSolver.h"
+#include <core/Solver.h>
+#include <simp/SimpSolver.h>
 #include <vector>
 
 typedef Minisat::SimpSolver SatSolver;

@@ -45,9 +45,9 @@ void Field::print(std::ostream& os, const SatSolver& s) const {
     for (int y = 0; y < height(); ++y) {
         for (int x = 0; x < width(); ++x) {
             const Minisat::lbool value = s.modelValue(operator()(x, y));
-            if (value == Minisat::l_False) {
+            if (Minisat::toInt(value) == 1 /* = Minisat::l_False */) {
                 os << ".";
-            } else if (value == Minisat::l_True) {
+            } else if (Minisat::toInt(value) == 0 /* = Minisat::l_True */) {
                 os << "X";
             } else {
                 os << "?";
